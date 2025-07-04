@@ -1,11 +1,18 @@
 import json
 import boto3
 import os
+from botocore.exceptions import ClientError
 
 client = boto3.client('cognito-idp')
+secrets_client = boto3.client('secretsmanager')
 
-USER_POOL_ID = os.environ.get("USER_POOL_ID")
-USER_POOL_CLIENT_ID = os.environ.get("USER_POOL_CLIENT_ID")
+def get_secret_values(secret_name: str) -> dict:
+    resp = secrets_client.get_secret_value(SecretId=secret_name)
+    return json.loads(resp['SecretString'])
+
+_secrets = get_secret_values("user-app/secrets")
+USER_POOL_ID = _secrets["USER_POOL_ID"]
+USER_POOL_CLIENT_ID = _secrets["USER_POOL_CLIENT_ID"]
 
 def lambda_handler(event, context):
     try:

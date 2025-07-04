@@ -1,6 +1,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.register import app
+import os
+
+USER_POOL_ID = os.environ.get("USER_POOL_ID")
+USER_POOL_CLIENT_ID = os.environ.get("USER_POOL_CLIENT_ID")
+
 
 @patch('boto3.client')
 def test_register_success(mock_boto):
