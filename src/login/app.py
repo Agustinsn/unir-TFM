@@ -6,6 +6,9 @@ import os
 client = boto3.client("cognito-idp")
 cloudwatch = boto3.client("cloudwatch")
 
+USER_POOL_ID = os.environ.get("USER_POOL_ID")
+USER_POOL_CLIENT_ID = os.environ.get("USER_POOL_CLIENT_ID")
+
 def record_failed_login_metric(email, reason):
     """Envía una métrica personalizada a CloudWatch."""
     try:
@@ -49,8 +52,8 @@ def lambda_handler(event, context):
 
     try:
         response = client.admin_initiate_auth(
-            UserPoolId=os.environ["USER_POOL_ID"],
-            ClientId=os.environ["USER_POOL_CLIENT_ID"],
+            UserPoolId=USER_POOL_ID,
+            ClientId=USER_POOL_CLIENT_ID,
             AuthFlow="ADMIN_USER_PASSWORD_AUTH",
             AuthParameters={
                 "USERNAME": email,

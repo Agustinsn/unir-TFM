@@ -4,6 +4,9 @@ import os
 
 client = boto3.client('cognito-idp')
 
+USER_POOL_ID = os.environ.get("USER_POOL_ID")
+USER_POOL_CLIENT_ID = os.environ.get("USER_POOL_CLIENT_ID")
+
 def lambda_handler(event, context):
     try:
         body = json.loads(event['body'])
@@ -17,7 +20,7 @@ def lambda_handler(event, context):
             }
 
         response = client.sign_up(
-            ClientId=os.environ['USER_POOL_CLIENT_ID'],
+            ClientId=USER_POOL_CLIENT_ID,
             Username=email,
             Password=password,
             UserAttributes=[
