@@ -254,6 +254,8 @@ Resources:
                   - s3:*
                   - iam:PassRole
                   - secretsmanager:GetSecretValue
+                  - cloudwatch:PutMetricData
+                  - cognito-idp:AdminInitiateAuth
                 Resource: "*"
 
   CodePipelineRole:
