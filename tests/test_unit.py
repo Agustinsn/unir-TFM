@@ -1,5 +1,5 @@
 import unittest
-from login import app
+from src.login import app
 
 class TestLoginFunction(unittest.TestCase):
 

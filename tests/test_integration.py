@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from login import app
+from src.login import app
 
 class TestLoginIntegration(unittest.TestCase):
 

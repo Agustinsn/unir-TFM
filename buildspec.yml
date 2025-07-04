@@ -8,7 +8,8 @@ phases:
       - pip install aws-sam-cli pytest
   pre_build:
     commands:
-      - echo "🔍 Ejecutando tests"
+      - echo "Running tests"
+      - export PYTHONPATH=$PYTHONPATH:$(pwd)
       - pytest tests/
   build:
     commands:
