@@ -277,6 +277,7 @@ Resources:
                   - codebuild:*
                   - s3:*
                   - iam:PassRole
+                  - secretsmanager:GetSecretValue
                 Resource: "*"
 
   #  CodeBuild y CodePipeline
@@ -321,6 +322,7 @@ Resources:
                 Branch: main
                 OAuthToken: "{{resolve:secretsmanager:github-token:SecretString:token}}"
               RunOrder: 1
+
         - Name: Build
           Actions:
             - Name: BuildAndDeploy
