@@ -319,7 +319,7 @@ Resources:
               Configuration:
                 Owner: Agustinsn
                 Repo: unir-TFM
-                Branch: main
+                Branch: master
                 OAuthToken: "{{resolve:secretsmanager:github-token:SecretString:token}}"
               RunOrder: 1
 
