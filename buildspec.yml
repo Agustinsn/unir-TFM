@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - pip install aws-sam-cli pytest
+  pre_build:
+    commands:
+      - echo "🔍 Ejecutando tests"
+      - pytest tests/
+  build:
+    commands:
+      - sam build
+  post_build:
+    commands:
+      - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name infra-userapp --capabilities CAPABILITY_NAMED_IAM
+
+artifacts:
+  files:
+    - template.yaml
