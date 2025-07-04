@@ -115,7 +115,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: LoginUserFunction
-      CodeUri: src/auth/
+      CodeUri: src/login/
       Handler: app.lambda_handler
       Runtime: python3.11
       MemorySize: 128

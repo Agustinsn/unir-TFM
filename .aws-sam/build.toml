@@ -9,8 +9,8 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["RegisterUserFunction"]
 
-[function_build_definitions.95481d7c-59e5-4396-a492-d94c790edd6e]
-codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-only\\src\\auth"
+[function_build_definitions.553a7cc6-2488-4303-b2ad-91203374aa98]
+codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-only\\src\\login"
 runtime = "python3.11"
 architecture = "x86_64"
 handler = "app.lambda_handler"
