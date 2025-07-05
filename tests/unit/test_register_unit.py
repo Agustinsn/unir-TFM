@@ -3,8 +3,7 @@ import os
 import json
 import boto3
 import pytest
-from moto import mock_cognitoidp
-from src.register_user.app import handler
+from src.register.app import handler
 
 @pytest.fixture(autouse=True)
 def cognito_mock():
