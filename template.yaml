@@ -101,8 +101,8 @@ Resources:
       Timeout: 10
       Environment:
         Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          USER_POOL_ID: us-east-1_DGz0OYx6u
+          USER_POOL_CLIENT_ID: 7k4brdtd9ug4hqaf927r3qu3kf
       Events:
         ApiRegister:
           Type: Api
@@ -123,8 +123,8 @@ Resources:
       Role: !GetAtt LoginLambdaRole.Arn
       Environment:
         Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          USER_POOL_ID: us-east-1_DGz0OYx6u
+          USER_POOL_CLIENT_ID: 7k4brdtd9ug4hqaf927r3qu3kf
       Events:
         LoginApi:
           Type: Api
@@ -276,7 +276,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:userapp/env-variables*
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:userapp/env-variables*
 
   CodePipelineRole:
     Type: AWS::IAM::Role
