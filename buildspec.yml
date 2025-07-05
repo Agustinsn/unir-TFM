@@ -1,23 +1,30 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+
 phases:
   install:
     runtime-versions:
       python: 3.11
     commands:
-      - pip install aws-sam-cli pytest
-  pre_build:
-    commands:
-      - echo "Running tests"
-      - export PYTHONPATH=$PYTHONPATH:$(pwd)
-      - pytest tests/
+      - yum install -y docker                
+      - service docker start                 
+      - pip install --upgrade pip
+      - pip install pytest moto boto3 requests aws-sam-cli
+
   build:
     commands:
+      - sam --version
       - sam build
+
   post_build:
     commands:
-      - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name infra-userapp --capabilities CAPABILITY_NAMED_IAM
+      - pytest tests/unit
 
-artifacts:
-  files:
-    - template.yaml
+      - sam local start-api --port 3000 --env-vars env.json &
+      - echo "Esperando a que la API esté arriba..."
+      - sleep 5
+
+      - pytest tests/integration
