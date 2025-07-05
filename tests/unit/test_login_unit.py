@@ -1,80 +1,101 @@
 # tests/unit/test_login_unit.py
 
 import pytest
-import boto3
 import json
-from moto import mock_cognitoidp
+import boto3
+from moto import mock_cognitoidp, mock_secretsmanager
+
 from src.login import app
 
-@pytest.fixture(autouse=True)
-def mock_cognito():
-    with mock_cognitoidp():
-        client = boto3.client("cognito-idp", region_name="us-east-1")
+@pytest.fixture(scope="module")
+def setup_environment():
+    region = "us-east-1"
 
-        # Crear UserPool
-        user_pool = client.create_user_pool(PoolName="TestPool")
-        user_pool_id = user_pool["UserPool"]["Id"]
+    with mock_cognitoidp(), mock_secretsmanager():
+        cognito = boto3.client("cognito-idp", region_name=region)
+        secrets = boto3.client("secretsmanager", region_name=region)
 
-        # Crear UserPoolClient
-        user_pool_client = client.create_user_pool_client(
+        # Crear user pool
+        pool = cognito.create_user_pool(PoolName="TestPool")
+        user_pool_id = pool["UserPool"]["Id"]
+
+        # Crear client
+        client = cognito.create_user_pool_client(
             UserPoolId=user_pool_id,
             ClientName="TestClient"
         )
-        client_id = user_pool_client["UserPoolClient"]["ClientId"]
+        client_id = client["UserPoolClient"]["ClientId"]
 
-        email = "test@example.com"
-        password = "Test123!"
-        client.admin_create_user(
+        # Crear usuario confirmado
+        cognito.admin_create_user(
             UserPoolId=user_pool_id,
-            Username=email,
-            TemporaryPassword=password,
-            MessageAction='SUPPRESS'
+            Username="test@example.com",
+            TemporaryPassword="Test123!",
+            MessageAction="SUPPRESS"
         )
-        client.admin_set_user_password(
+        cognito.admin_set_user_password(
             UserPoolId=user_pool_id,
-            Username=email,
-            Password=password,
+            Username="test@example.com",
+            Password="Test123!",
             Permanent=True
         )
 
-        app.client = client
-        app.COGNITO_CLIENT_ID = client_id
-        app.COGNITO_USER_POOL_ID = user_pool_id
+        # Crear usuario no confirmado
+        cognito.admin_create_user(
+            UserPoolId=user_pool_id,
+            Username="unconfirmed@example.com",
+            TemporaryPassword="TempPass123!",
+            MessageAction="SUPPRESS"
+        )
+        # (No llamamos a `admin_set_user_password`, queda no confirmado)
+
+        # Crear secreto
+        secrets.create_secret(
+            Name="userapp/env-variables",
+            SecretString=json.dumps({
+                "USER_POOL_ID": user_pool_id,
+                "USER_POOL_CLIENT_ID": client_id
+            })
+        )
+
+        # Inyectar mocks
+        app.cognito = cognito
+        app.secrets_client = secrets
 
         yield
 
-def test_login_success():
+def test_login_success(setup_environment):
     event = {
         "body": json.dumps({
             "email": "test@example.com",
             "password": "Test123!"
         })
     }
-
     response = app.lambda_handler(event, None)
     assert response["statusCode"] == 200
-    assert "access_token" in response["body"]
+    body = json.loads(response["body"])
+    assert "access_token" in body
 
-def test_login_invalid_password():
+def test_login_invalid_password(setup_environment):
     event = {
         "body": json.dumps({
             "email": "test@example.com",
-            "password": "WronPass!"
+            "password": "WrongPassword!"
         })
     }
-
     response = app.lambda_handler(event, None)
     assert response["statusCode"] == 401
-    assert response["body"] == "Incorrect username or password"
+    body = json.loads(response["body"])
+    assert body["message"] == "Invalid email or password"
 
-def test_login_user_not_found():
+def test_login_unconfirmed_user(setup_environment):
     event = {
         "body": json.dumps({
-            "email": "noexist@example.com",
-            "password": "Whatever123"
+            "email": "unconfirmed@example.com",
+            "password": "TempPass123!"
         })
     }
-
     response = app.lambda_handler(event, None)
-    assert response["statusCode"] == 404
-    assert response["body"] == "User not found"
+    assert response["statusCode"] == 403
+    body = json.loads(response["body"])
+    assert body["message"] == "User not confirmed"
