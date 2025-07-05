@@ -3,7 +3,7 @@ import os
 import json
 import boto3
 import pytest
-from src.login.app import handler
+from src.login.app import lambda_handler
 
 @pytest.fixture(autouse=True)
 def cognito_mock():
