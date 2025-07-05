@@ -1,8 +1,9 @@
 # tests/unit/test_login_unit.py
 
 import pytest
-from moto import mock_cognitoidp
 import boto3
+import json
+from moto import mock_cognitoidp
 from src.login import app
 
 @pytest.fixture(autouse=True)
@@ -44,10 +45,10 @@ def mock_cognito():
 
 def test_login_success():
     event = {
-        "body": {
+        "body": json.dumps({
             "email": "test@example.com",
             "password": "Test123!"
-        }
+        })
     }
 
     response = app.lambda_handler(event, None)
@@ -56,10 +57,10 @@ def test_login_success():
 
 def test_login_invalid_password():
     event = {
-        "body": {
+        "body": json.dumps({
             "email": "test@example.com",
-            "password": "WrongPass!"
-        }
+            "password": "WronPass!"
+        })
     }
 
     response = app.lambda_handler(event, None)
@@ -68,10 +69,10 @@ def test_login_invalid_password():
 
 def test_login_user_not_found():
     event = {
-        "body": {
+        "body": json.dumps({
             "email": "noexist@example.com",
             "password": "Whatever123"
-        }
+        })
     }
 
     response = app.lambda_handler(event, None)

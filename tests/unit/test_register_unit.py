@@ -4,6 +4,7 @@ import pytest
 from moto import mock_cognitoidp
 import boto3
 import os
+import json
 
 from src.register import app
 
@@ -24,10 +25,10 @@ def mock_cognito():
 
 def test_register_success():
     event = {
-        "body": {
+        "body": json.dumps({
             "email": "test@example.com",
             "password": "Test123!"
-        }
+        })
     }
 
     response = app.lambda_handler(event, None)
@@ -38,7 +39,7 @@ def test_register_user_exists():
     email = "test@example.com"
     password = "Test123!"
 
-    event = {"body": {"email": email, "password": password}}
+    event = {"body": json.dumps({"email": email, "password": password})}
     app.lambda_handler(event, None) 
 
     response = app.lambda_handler(event, None) 
