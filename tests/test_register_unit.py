@@ -18,5 +18,5 @@ def test_register_unit(mock_boto_client, mock_get_secret):
     event = {"body": json.dumps({"email": "x@x.com", "password": "Abc123$%"})}
     res = lambda_handler(event, None)
     assert res["statusCode"] == 200
-    mock_get_secret.assert_called_once_with("user-app/secrets")
+    mock_get_secret.assert_called_once_with("userapp/env-variables")
     mock_boto_client.assert_called_with("cognito-idp")

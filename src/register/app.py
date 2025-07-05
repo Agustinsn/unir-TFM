@@ -5,7 +5,7 @@ from botocore.exceptions import ClientError
 
 cognito = boto3.client('cognito-idp')
 secrets_client = boto3.client('secretsmanager')
-SECRET_NAME = "user-app/secrets"
+SECRET_NAME = "userapp/env-variables"
 
 def get_secret_values(secret_name: str) -> dict:
     try:
