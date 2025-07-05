@@ -1,3 +1,5 @@
 boto3
 pytest
-moto[cognitoidp]
+moto[cognitoidp]==4.2.11
+requests
+aws-sam-cli

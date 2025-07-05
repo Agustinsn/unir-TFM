@@ -12,7 +12,7 @@ phases:
       - docker info
       - pip install --upgrade pip
       - pip install -r requirements.txt
-      - pip install pytest moto[boto3]==4.2.11 boto3 requests aws-sam-cli
+      - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
       - python -c "from moto import mock_cognitoidp; print('mock_cognitoidp OK')"
 
   build:
