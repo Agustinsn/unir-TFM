@@ -1,36 +1,46 @@
-# tests/unit/test_register_user.py
-import os
-import json
-import boto3
+# tests/unit/test_register_unit.py
+
 import pytest
 from moto import mock_cognitoidp
-from src.register.app import lambda_handler
+import boto3
+import os
+
+from src.register import app
 
 @pytest.fixture(autouse=True)
-def cognito_mock():
+def mock_cognito():
     with mock_cognitoidp():
         client = boto3.client("cognito-idp", region_name="us-east-1")
-        pool = client.create_user_pool(PoolName="test-pool")
-        os.environ["USER_POOL_ID"] = pool["UserPool"]["Id"]
-        client.create_user_pool_client(
-            UserPoolId=pool["UserPool"]["Id"],
-            ClientName="test-client"
-        )
+        user_pool = client.create_user_pool(PoolName="TestPool")
+        user_pool_id = user_pool["UserPool"]["Id"]
+
+        app.client = client
+        app.COGNITO_CLIENT_ID = client.create_user_pool_client(
+            UserPoolId=user_pool_id,
+            ClientName="TestClient"
+        )["UserPoolClient"]["ClientId"]
+
         yield
 
 def test_register_success():
     event = {
-        "body": json.dumps({
-            "username": "juan",
-            "password": "Secreto123!"
-        })
+        "body": {
+            "email": "test@example.com",
+            "password": "Test123!"
+        }
     }
-    resp = handler(event, None)
-    body = json.loads(resp["body"])
-    assert resp["statusCode"] == 201
-    assert "User created" in body["message"]
 
-def test_register_missing_fields():
-    event = {"body": json.dumps({})}
-    resp = handler(event, None)
-    assert resp["statusCode"] == 400
+    response = app.register_user(event, None)
+    assert response["statusCode"] == 201
+    assert "userSub" in response["body"]
+
+def test_register_user_exists():
+    email = "test@example.com"
+    password = "Test123!"
+
+    event = {"body": {"email": email, "password": password}}
+    app.register_user(event, None) 
+
+    response = app.register_user(event, None) 
+    assert response["statusCode"] == 409
+    assert response["body"] == "User already exists"

@@ -1,53 +1,79 @@
-# tests/unit/test_login_user.py
-import os
-import json
-import boto3
+# tests/unit/test_login_unit.py
+
 import pytest
 from moto import mock_cognitoidp
-from src.login.app import lambda_handler
+import boto3
+from src.login import app
 
 @pytest.fixture(autouse=True)
-def cognito_mock():
+def mock_cognito():
     with mock_cognitoidp():
         client = boto3.client("cognito-idp", region_name="us-east-1")
-        pool = client.create_user_pool(PoolName="test-pool")
-        os.environ["USER_POOL_ID"] = pool["UserPool"]["Id"]
-        client.create_user_pool_client(
-            UserPoolId=pool["UserPool"]["Id"],
-            ClientName="test-client",
-            GenerateSecret=False
+
+        # Crear UserPool
+        user_pool = client.create_user_pool(PoolName="TestPool")
+        user_pool_id = user_pool["UserPool"]["Id"]
+
+        # Crear UserPoolClient
+        user_pool_client = client.create_user_pool_client(
+            UserPoolId=user_pool_id,
+            ClientName="TestClient"
         )
+        client_id = user_pool_client["UserPoolClient"]["ClientId"]
+
+        email = "test@example.com"
+        password = "Test123!"
         client.admin_create_user(
-            UserPoolId=pool["UserPool"]["Id"],
-            Username="juan",
-            TemporaryPassword="Temp123!"
+            UserPoolId=user_pool_id,
+            Username=email,
+            TemporaryPassword=password,
+            MessageAction='SUPPRESS'
         )
         client.admin_set_user_password(
-            UserPoolId=pool["UserPool"]["Id"],
-            Username="juan",
-            Password="Secreto123!",
+            UserPoolId=user_pool_id,
+            Username=email,
+            Password=password,
             Permanent=True
         )
+
+        app.client = client
+        app.COGNITO_CLIENT_ID = client_id
+        app.COGNITO_USER_POOL_ID = user_pool_id
+
         yield
 
 def test_login_success():
     event = {
-        "body": json.dumps({
-            "username": "juan",
-            "password": "Secreto123!"
-        })
+        "body": {
+            "email": "test@example.com",
+            "password": "Test123!"
+        }
     }
-    resp = handler(event, None)
-    body = json.loads(resp["body"])
-    assert resp["statusCode"] == 200
-    assert "AuthenticationResult" in body
 
-def test_login_bad_password():
+    response = app.login_user(event, None)
+    assert response["statusCode"] == 200
+    assert "access_token" in response["body"]
+
+def test_login_invalid_password():
     event = {
-        "body": json.dumps({
-            "username": "juan",
-            "password": "Wrong!"
-        })
+        "body": {
+            "email": "test@example.com",
+            "password": "WrongPass!"
+        }
     }
-    resp = handler(event, None)
-    assert resp["statusCode"] == 401
+
+    response = app.login_user(event, None)
+    assert response["statusCode"] == 401
+    assert response["body"] == "Incorrect username or password"
+
+def test_login_user_not_found():
+    event = {
+        "body": {
+            "email": "noexist@example.com",
+            "password": "Whatever123"
+        }
+    }
+
+    response = app.login_user(event, None)
+    assert response["statusCode"] == 404
+    assert response["body"] == "User not found"

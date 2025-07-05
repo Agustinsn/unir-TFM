@@ -41,7 +41,6 @@ def record_failed_login_metric(email: str, reason: str):
 
 
 def lambda_handler(event, context):
-    # 1) Obtén credenciales de Cognito del entorno o Secrets Manager
     user_pool_id = os.getenv("USER_POOL_ID")
     client_id    = os.getenv("USER_POOL_CLIENT_ID")
 
@@ -58,7 +57,6 @@ def lambda_handler(event, context):
                 })
             }
 
-    # 2) Parseo y validación del body
     print("Evento recibido:", event)
     try:
         body = json.loads(event.get("body", "{}"))
@@ -76,7 +74,6 @@ def lambda_handler(event, context):
             "body": json.dumps({"message": "Email and password are required"})
         }
 
-    # 3) Intento de autenticación
     try:
         resp = cognito.admin_initiate_auth(
             UserPoolId=user_pool_id,
