@@ -2,7 +2,13 @@ import json
 import pytest
 import boto3
 from moto import mock_cognitoidp, mock_secretsmanager
-import login_app  # tu archivo con lambda_handler
+import sys
+import os
+
+# Agrega la ruta al directorio 'src/login' donde está app.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src/login')))
+
+import app as login_app  # Ahora 'app.py' será importado como 'login_app'
 
 USER_POOL_ID = None
 CLIENT_ID = None
