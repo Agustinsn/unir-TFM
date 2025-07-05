@@ -1,81 +1,36 @@
 import json
 import boto3
 import os
-from botocore.exceptions import ClientError
 
+# Estas serán reemplazables en tests
 cognito = boto3.client("cognito-idp")
 cloudwatch = boto3.client("cloudwatch")
 secrets_client = boto3.client("secretsmanager")
 
 SECRET_NAME = "userapp/env-variables"
 
-def get_secret_values(secret_name: str) -> dict:
-    try:
-        response = secrets_client.get_secret_value(SecretId=secret_name)
-        return json.loads(response['SecretString'])
-    except secrets_client.exceptions.ResourceNotFoundException:
-        print(f"El secreto {secret_name} no fue encontrado.")
-        raise
-    except Exception as e:
-        print(f"Error al obtener secreto {secret_name}: {e}")
-        raise
+def get_secret_values(secret_name: str, secrets_client=secrets_client) -> dict:
+    response = secrets_client.get_secret_value(SecretId=secret_name)
+    return json.loads(response['SecretString'])
 
+def lambda_handler(event, context, cognito_client=None, secrets=None):
+    cognito_client = cognito_client or cognito
+    secrets = secrets or secrets_client
 
-def record_failed_login_metric(email: str, reason: str):
-    """Envía una métrica personalizada a CloudWatch."""
-    try:
-        cloudwatch.put_metric_data(
-            Namespace="UserLogin",
-            MetricData=[{
-                "MetricName": "FailedLogin",
-                "Dimensions": [
-                    {"Name": "Reason", "Value": reason},
-                    {"Name": "User",   "Value": email}
-                ],
-                "Unit": "Count",
-                "Value": 1
-            }]
-        )
-    except Exception as e:
-        print("Error enviando métrica a CloudWatch:", str(e))
-
-
-def lambda_handler(event, context):
     user_pool_id = os.getenv("USER_POOL_ID")
-    client_id    = os.getenv("USER_POOL_CLIENT_ID")
+    client_id = os.getenv("USER_POOL_CLIENT_ID")
 
     if not user_pool_id or not client_id:
-        try:
-            secrets = get_secret_values(SECRET_NAME)
-            user_pool_id = secrets.get("USER_POOL_ID")
-            client_id    = secrets.get("USER_POOL_CLIENT_ID")
-        except Exception as e:
-            return {
-                "statusCode": 500,
-                "body": json.dumps({
-                    "message": f"No se pudo leer secreto '{SECRET_NAME}': {e}"
-                })
-            }
-
-    print("Evento recibido:", event)
-    try:
-        body = json.loads(event.get("body", "{}"))
-    except json.JSONDecodeError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Invalid JSON format"})
-        }
-
-    email = body.get("email")
-    password = body.get("password")
-    if not email or not password:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Email and password are required"})
-        }
+        secrets_data = get_secret_values(SECRET_NAME, secrets)
+        user_pool_id = secrets_data.get("USER_POOL_ID")
+        client_id = secrets_data.get("USER_POOL_CLIENT_ID")
 
     try:
-        resp = cognito.admin_initiate_auth(
+        body = json.loads(event["body"])
+        email = body.get("email")
+        password = body.get("password")
+
+        resp = cognito_client.admin_initiate_auth(
             UserPoolId=user_pool_id,
             ClientId=client_id,
             AuthFlow="ADMIN_USER_PASSWORD_AUTH",
@@ -84,34 +39,23 @@ def lambda_handler(event, context):
                 "PASSWORD": password
             }
         )
-        auth = resp["AuthenticationResult"]
+
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "access_token":  auth.get("AccessToken"),
-                "id_token":      auth.get("IdToken"),
-                "refresh_token": auth.get("RefreshToken")
-            })
+            "body": json.dumps(resp["AuthenticationResult"])
         }
 
-    except (cognito.exceptions.UserNotFoundException,
-            cognito.exceptions.NotAuthorizedException) as e:
-        record_failed_login_metric(email, "InvalidCredentials")
+    except cognito_client.exceptions.NotAuthorizedException:
         return {
             "statusCode": 401,
             "body": json.dumps({"message": "Invalid email or password"})
         }
-
-    except cognito.exceptions.UserNotConfirmedException as e:
-        record_failed_login_metric(email, "UserNotConfirmed")
+    except cognito_client.exceptions.UserNotConfirmedException:
         return {
             "statusCode": 403,
             "body": json.dumps({"message": "User not confirmed"})
         }
-
     except Exception as e:
-        record_failed_login_metric(email, "UnknownError")
-        print("Error inesperado:", str(e))
         return {
             "statusCode": 500,
             "body": json.dumps({"message": str(e)})

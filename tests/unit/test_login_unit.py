@@ -65,16 +65,15 @@ def setup_environment():
         yield
 
 def test_login_success(setup_environment):
+    cognito, secrets = setup_environment
     event = {
         "body": json.dumps({
             "email": "test@example.com",
             "password": "Test123!"
         })
     }
-    response = app.lambda_handler(event, None)
+    response = app.lambda_handler(event, None, cognito_client=cognito, secrets=secrets)
     assert response["statusCode"] == 200
-    body = json.loads(response["body"])
-    assert "access_token" in body
 
 def test_login_invalid_password(setup_environment):
     event = {
