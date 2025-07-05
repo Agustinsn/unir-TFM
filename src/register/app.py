@@ -3,14 +3,20 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 
-# Sólo clientes, no hacemos llamadas aquí
 cognito = boto3.client('cognito-idp')
 secrets_client = boto3.client('secretsmanager')
 SECRET_NAME = "user-app/secrets"
 
 def get_secret_values(secret_name: str) -> dict:
-    resp = secrets_client.get_secret_value(SecretId=secret_name)
-    return json.loads(resp['SecretString'])
+    try:
+        response = secrets_client.get_secret_value(SecretId=secret_name)
+        return json.loads(response['SecretString'])
+    except secrets_client.exceptions.ResourceNotFoundException:
+        print(f"El secreto {secret_name} no fue encontrado.")
+        raise
+    except Exception as e:
+        print(f"Error al obtener secreto {secret_name}: {e}")
+        raise
 
 def lambda_handler(event, context):
     user_pool_id = os.getenv("USER_POOL_ID")

@@ -3,18 +3,22 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 
-# Clientes de AWS
 cognito = boto3.client("cognito-idp")
 cloudwatch = boto3.client("cloudwatch")
 secrets_client = boto3.client("secretsmanager")
 
-# Nombre del secreto en Secrets Manager
 SECRET_NAME = "user-app/secrets"
 
 def get_secret_values(secret_name: str) -> dict:
-    """Obtiene y parsea el JSON del secreto dado."""
-    resp = secrets_client.get_secret_value(SecretId=secret_name)
-    return json.loads(resp["SecretString"])
+    try:
+        response = secrets_client.get_secret_value(SecretId=secret_name)
+        return json.loads(response['SecretString'])
+    except secrets_client.exceptions.ResourceNotFoundException:
+        print(f"El secreto {secret_name} no fue encontrado.")
+        raise
+    except Exception as e:
+        print(f"Error al obtener secreto {secret_name}: {e}")
+        raise
 
 
 def record_failed_login_metric(email: str, reason: str):
