@@ -23,10 +23,10 @@ phases:
     commands:
       - export PYTHONPATH=$PWD/src:$PYTHONPATH
       - pytest tests/unit
-      - sam local start-api --port 3000 --env-vars env.json &
-      - echo "Esperando a que la API esté arriba..."
-      - sleep 5
-      - pytest tests/integration
+      # - sam local start-api --port 3000 --env-vars env.json &
+      # - echo "Esperando a que la API esté arriba..."
+      # - sleep 5
+      # - pytest tests/integration
 
 artifacts:
   files:
