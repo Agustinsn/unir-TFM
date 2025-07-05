@@ -30,7 +30,7 @@ def test_register_success():
         }
     }
 
-    response = app.register_user(event, None)
+    response = app.lambda_handler(event, None)
     assert response["statusCode"] == 201
     assert "userSub" in response["body"]
 
@@ -39,8 +39,8 @@ def test_register_user_exists():
     password = "Test123!"
 
     event = {"body": {"email": email, "password": password}}
-    app.register_user(event, None) 
+    app.lambda_handler(event, None) 
 
-    response = app.register_user(event, None) 
+    response = app.lambda_handler(event, None) 
     assert response["statusCode"] == 409
     assert response["body"] == "User already exists"

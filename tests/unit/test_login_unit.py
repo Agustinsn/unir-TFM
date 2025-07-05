@@ -50,7 +50,7 @@ def test_login_success():
         }
     }
 
-    response = app.login_user(event, None)
+    response = app.lambda_handler(event, None)
     assert response["statusCode"] == 200
     assert "access_token" in response["body"]
 
@@ -62,7 +62,7 @@ def test_login_invalid_password():
         }
     }
 
-    response = app.login_user(event, None)
+    response = app.lambda_handler(event, None)
     assert response["statusCode"] == 401
     assert response["body"] == "Incorrect username or password"
 
@@ -74,6 +74,6 @@ def test_login_user_not_found():
         }
     }
 
-    response = app.login_user(event, None)
+    response = app.lambda_handler(event, None)
     assert response["statusCode"] == 404
     assert response["body"] == "User not found"
