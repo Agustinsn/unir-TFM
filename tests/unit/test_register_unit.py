@@ -3,6 +3,7 @@ import os
 import json
 import boto3
 import pytest
+from moto import mock_cognitoidp
 from src.register.app import lambda_handler
 
 @pytest.fixture(autouse=True)
