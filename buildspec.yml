@@ -3,40 +3,28 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: us-east-1
-  export:
-    PYTHONPATH: $CODEBUILD_SRC_DIR/src
 
 phases:
   install:
     runtime-versions:
       python: 3.11
     commands:
-      - echo "==== Instalando dependencias ===="
       - docker info
       - pip install --upgrade pip
       - pip install pytest moto boto3 requests aws-sam-cli
 
   build:
     commands:
-      - echo "==== Versión SAM ===="
       - sam --version
-      - echo "==== Sam Build ===="
       - sam build
 
   post_build:
     commands:
-      - echo "==== Ejecutando tests unitarios ===="
+      - export PYTHONPATH=$PWD/src:$PYTHONPATH
       - pytest tests/unit
-
-      - echo "==== Levantando API localmente ===="
-      # Generamos un archivo env.json con solo las variables de entorno necesarias para sam local
-      - printf '{"USER_POOL_ID":"%s","USER_POOL_CLIENT_ID":"%s"}' $USER_POOL_ID $USER_POOL_CLIENT_ID > env.json
       - sam local start-api --port 3000 --env-vars env.json &
-
-      - echo "Esperando 5s a que la API esté arriba..."
+      - echo "Esperando a que la API esté arriba..."
       - sleep 5
-
-      - echo "==== Ejecutando tests de integración ===="
       - pytest tests/integration
 
 artifacts:
