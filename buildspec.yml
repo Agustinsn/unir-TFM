@@ -1,34 +1,76 @@
+# version: 0.2
+
+# env:
+#   variables:
+#     AWS_DEFAULT_REGION: us-east-1
+
+# phases:
+#   install:
+#     runtime-versions:
+#       python: 3.11
+#     commands:
+#       - docker info
+#       - pip install --upgrade pip
+#       - pip install -r requirements.txt
+#       - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
+#       - python -c "from moto import mock_cognitoidp; print('mock_cognitoidp OK')"
+
+#   build:
+#     commands:
+#       - sam --version
+#       - sam build
+
+#   post_build:
+#     commands:
+#       - export PYTHONPATH=$PWD/src:$PYTHONPATH
+#       - pytest tests/unit
+#       # - sam local start-api --port 3000 --env-vars env.json &
+#       # - echo "Esperando a que la API esté arriba..."
+#       # - sleep 5
+#       # - pytest tests/integration
+
+# artifacts:
+#   files:
+#     - '**/*'
 version: 0.2
 
 env:
   variables:
-    AWS_DEFAULT_REGION: us-east-1
+    NODE_ENV: test
 
 phases:
   install:
     runtime-versions:
-      python: 3.11
+      nodejs: 18
     commands:
-      - docker info
-      - pip install --upgrade pip
-      - pip install -r requirements.txt
-      - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
-      - python -c "from moto import mock_cognitoidp; print('mock_cognitoidp OK')"
+      - echo Installing dependencies...
+      - npm ci
+
+  pre_build:
+    commands:
+      - echo Running unit tests...
+      - npm test -- --testPathPattern="tests/unit" --ci --reporters=default --reporters=jest-junit
 
   build:
     commands:
-      - sam --version
+      - echo Packaging with SAM...
       - sam build
+      - sam deploy --guided --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --no-confirm-changeset --no-fail-on-empty-changeset --stack-name user-app-${STAGE}
 
   post_build:
     commands:
-      - export PYTHONPATH=$PWD/src:$PYTHONPATH
-      - pytest tests/unit
-      # - sam local start-api --port 3000 --env-vars env.json &
-      # - echo "Esperando a que la API esté arriba..."
-      # - sleep 5
-      # - pytest tests/integration
+      - echo Running integration tests...
+      - npm test -- --testPathPattern="tests/integration" --ci --reporters=default --reporters=jest-junit
 
-artifacts:
-  files:
-    - '**/*'
+reports:
+  unit-tests:
+    files:
+      - "**/junit.xml"
+    base-directory: "tests/unit"
+    file-format: JUNITXML
+
+  integration-tests:
+    files:
+      - "**/junit.xml"
+    base-directory: "tests/integration"
+    file-format: JUNITXML

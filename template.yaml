@@ -15,7 +15,7 @@ Globals:
       - x86_64
 
 Resources:
-  ## ========== VPC & Networking ==========
+  # VPC & Networking 
 
   MyVPC:
     Type: AWS::EC2::VPC
@@ -27,7 +27,6 @@ Resources:
         - Key: Name
           Value: SAM-VPC
 
-  # Public Subnets (para NAT GW + IGW)
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -198,26 +197,50 @@ Resources:
 
   ## ========== Lambdas ==========
 
+  # RegisterUserFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: RegisterUserFunction
+  #     CodeUri: src/register/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.11
+  #     Role: !GetAtt RegisterLambdaRole.Arn
+  #     MemorySize: 128
+  #     Timeout: 10
+  #     VpcConfig:
+  #       SecurityGroupIds:
+  #         - !Ref LambdaSecurityGroup
+  #       SubnetIds:
+  #         - !Ref PrivateSubnet1
+  #         - !Ref PrivateSubnet2
+  #     Environment:
+  #       Variables:
+  #         USER_POOL_ID: !Ref UserPool
+  #         USER_POOL_CLIENT_ID: !Ref UserPoolClient
+  #     Events:
+  #       ApiRegister:
+  #         Type: Api
+  #         Properties:
+  #           Path: /register
+  #           Method: post
+
   RegisterUserFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: RegisterUserFunction
       CodeUri: src/register/
-      Handler: app.lambda_handler
-      Runtime: python3.11
-      Role: !GetAtt RegisterLambdaRole.Arn
-      MemorySize: 128
-      Timeout: 10
+      Handler: app.register
+      Runtime: nodejs18.x
+      Environment:
+        USER_POOL_ID: !Ref UserPool
+        CLIENT_ID: !Ref UserPoolClient
       VpcConfig:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
-      Environment:
-        Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+      Policies:
+        - CognitoPowerUserPolicy
       Events:
         ApiRegister:
           Type: Api
@@ -252,7 +275,7 @@ Resources:
             Path: /login
             Method: POST
 
-  ## ========== IAM Roles ==========
+  # IAM Roles
 
   RegisterLambdaRole:
     Type: AWS::IAM::Role
@@ -324,14 +347,14 @@ Resources:
                   - cloudwatch:PutMetricData
                 Resource: "*"
 
-  ## ========== Artifact Bucket ==========
+  # Artifact Bucket
 
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "user-app-artifacts-bucket-${AWS::AccountId}"
 
-  ## ========== CI/CD Roles & Projects ==========
+  # CI/CD Roles & Projects
 
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -451,6 +474,18 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: SamDeploy
+              ActionTypeId: {Category: Deploy, Owner: AWS, Provider: CloudFormation, Version: 1}
+              InputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                StackName: !Sub user-app-${Stage}
+                TemplatePath: BuildOutput::template.yaml
+                Capabilities: CAPABILITY_IAM
               RunOrder: 1
 
 Outputs:
