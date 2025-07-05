@@ -9,8 +9,7 @@ phases:
     runtime-versions:
       python: 3.11
     commands:
-      - yum install -y docker                
-      - service docker start                 
+      - docker info
       - pip install --upgrade pip
       - pip install pytest moto boto3 requests aws-sam-cli
 
@@ -28,3 +27,7 @@ phases:
       - sleep 5
 
       - pytest tests/integration
+
+artifacts:
+  files:
+    - '**/*'
