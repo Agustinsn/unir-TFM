@@ -1,106 +1,125 @@
 import json
 import pytest
-import login.app as login_app
-from moto import mock_cognitoidp, mock_secretsmanager
 import boto3
+from moto import mock_cognitoidp, mock_secretsmanager
+import login_app  # tu archivo con lambda_handler
 
-USER_EMAIL = "test@example.com"
-USER_PASSWORD = "TempPass123!"
-UNCONFIRMED_EMAIL = "unconfirmed@example.com"
-INVALID_PASSWORD = "WrongPass123!"
+USER_POOL_ID = None
+CLIENT_ID = None
+SECRET_ARN = None
 
 @pytest.fixture(scope="module")
 def setup_environment():
-    with mock_cognitoidp():
-        with mock_secretsmanager():
-            region = "us-east-1"
-            boto3.setup_default_session(region_name=region)
+    global USER_POOL_ID, CLIENT_ID, SECRET_ARN
 
-            cognito = boto3.client("cognito-idp", region_name=region)
-            secrets = boto3.client("secretsmanager", region_name=region)
+    with mock_cognitoidp(), mock_secretsmanager():
+        cognito_client = boto3.client("cognito-idp", region_name="us-east-1")
+        secrets_client = boto3.client("secretsmanager", region_name="us-east-1")
 
-            user_pool_id = cognito.create_user_pool(PoolName="TestPool")['UserPool']['Id']
+        # Crear User Pool
+        pool = cognito_client.create_user_pool(PoolName="test-pool")
+        USER_POOL_ID = pool["UserPool"]["Id"]
 
-            client_id = cognito.create_user_pool_client(
-                UserPoolId=user_pool_id,
-                ClientName="TestClient",
-                GenerateSecret=False
-            )['UserPoolClient']['ClientId']
+        # Crear User Pool Client
+        client = cognito_client.create_user_pool_client(
+            UserPoolId=USER_POOL_ID,
+            ClientName="test-client",
+            GenerateSecret=False
+        )
+        CLIENT_ID = client["UserPoolClient"]["ClientId"]
 
-            # Crear secreto con credenciales
-            secrets.create_secret(
-                Name="userapp/env-variables",
-                SecretString=json.dumps({
-                    "USER_POOL_ID": user_pool_id,
-                    "USER_POOL_CLIENT_ID": client_id
-                })
-            )
+        # Crear usuario confirmado
+        cognito_client.admin_create_user(
+            UserPoolId=USER_POOL_ID,
+            Username="user@example.com",
+            TemporaryPassword="TempPass123!",
+            UserAttributes=[
+                {"Name": "email", "Value": "user@example.com"},
+                {"Name": "email_verified", "Value": "true"}
+            ],
+            MessageAction="SUPPRESS"
+        )
+        cognito_client.admin_set_user_password(
+            UserPoolId=USER_POOL_ID,
+            Username="user@example.com",
+            Password="TempPass123!",
+            Permanent=True
+        )
 
-            # Crear usuario confirmado
-            cognito.sign_up(
-                ClientId=client_id,
-                Username=USER_EMAIL,
-                Password=USER_PASSWORD,
-                UserAttributes=[{"Name": "email", "Value": USER_EMAIL}]
-            )
-            cognito.admin_confirm_sign_up(
-                UserPoolId=user_pool_id,
-                Username=USER_EMAIL
-            )
+        # Crear usuario no confirmado
+        cognito_client.admin_create_user(
+            UserPoolId=USER_POOL_ID,
+            Username="unconfirmed@example.com",
+            TemporaryPassword="TempPass123!",
+            UserAttributes=[
+                {"Name": "email", "Value": "unconfirmed@example.com"},
+                {"Name": "email_verified", "Value": "true"}
+            ],
+            MessageAction="SUPPRESS"
+        )
 
-            # Crear usuario no confirmado
-            cognito.sign_up(
-                ClientId=client_id,
-                Username=UNCONFIRMED_EMAIL,
-                Password=USER_PASSWORD,
-                UserAttributes=[{"Name": "email", "Value": UNCONFIRMED_EMAIL}]
-            )
+        # Guardar credenciales en Secrets Manager
+        secret_value = json.dumps({
+            "USER_POOL_ID": USER_POOL_ID,
+            "USER_POOL_CLIENT_ID": CLIENT_ID
+        })
 
-            return cognito, secrets, client_id
+        secret = secrets_client.create_secret(
+            Name="userapp/env-variables",
+            SecretString=secret_value
+        )
+        SECRET_ARN = secret["ARN"]
+
+        yield (cognito_client, secrets_client, USER_POOL_ID)
+
 
 def test_login_success(setup_environment, monkeypatch):
-    monkeypatch.setenv("USER_POOL_ID", setup_environment[0].describe_user_pool(UserPoolId=setup_environment[0].list_user_pools(MaxResults=1)['UserPools'][0]['Id'])['UserPool']['Id'])
-    monkeypatch.setenv("USER_POOL_CLIENT_ID", setup_environment[2])
+    monkeypatch.setenv("STAGE", "test")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
 
     event = {
         "body": json.dumps({
-            "email": USER_EMAIL,
-            "password": USER_PASSWORD
+            "email": "user@example.com",
+            "password": "TempPass123!"
         })
     }
     response = login_app.lambda_handler(event, None)
     assert response["statusCode"] == 200
 
+
 def test_login_invalid_password(setup_environment, monkeypatch):
-    monkeypatch.setenv("USER_POOL_ID", setup_environment[0].describe_user_pool(UserPoolId=setup_environment[0].list_user_pools(MaxResults=1)['UserPools'][0]['Id'])['UserPool']['Id'])
-    monkeypatch.setenv("USER_POOL_CLIENT_ID", setup_environment[2])
+    monkeypatch.setenv("STAGE", "test")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
 
     event = {
         "body": json.dumps({
-            "email": USER_EMAIL,
-            "password": INVALID_PASSWORD
+            "email": "user@example.com",
+            "password": "WrongPass123"
         })
     }
     response = login_app.lambda_handler(event, None)
     assert response["statusCode"] == 401
 
+
 def test_login_unconfirmed_user(setup_environment, monkeypatch):
-    monkeypatch.setenv("USER_POOL_ID", setup_environment[0].describe_user_pool(UserPoolId=setup_environment[0].list_user_pools(MaxResults=1)['UserPools'][0]['Id'])['UserPool']['Id'])
-    monkeypatch.setenv("USER_POOL_CLIENT_ID", setup_environment[2])
+    monkeypatch.setenv("STAGE", "test")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
 
     event = {
         "body": json.dumps({
-            "email": UNCONFIRMED_EMAIL,
-            "password": USER_PASSWORD
+            "email": "unconfirmed@example.com",
+            "password": "TempPass123!"
         })
     }
     response = login_app.lambda_handler(event, None)
     assert response["statusCode"] == 403
 
+
 def test_invalid_json():
     event = {"body": "{malformed json]"}
     response = login_app.lambda_handler(event, None)
     assert response["statusCode"] == 400
+
 
 def test_missing_credentials():
     event = {"body": json.dumps({})}
