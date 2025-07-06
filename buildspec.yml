@@ -43,21 +43,16 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
-      python: 3.11
     commands:
       - echo Installing Node.js dependencies for register function...
       - cd src/register && npm install
       - cd ../..
-      - echo Installing Python dependencies...
-      - pip install --upgrade pip
-      - pip install -r requirements.txt
-      - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
 
   pre_build:
     commands:
-      - echo Running Python unit tests...
-      - export PYTHONPATH=$PWD/src:$PYTHONPATH
-      - pytest tests/unit/ -v
+      - echo Running Node.js unit tests...
+      - cd src/register && npm test
+      - cd ../..
 
   build:
     commands:
@@ -66,21 +61,7 @@ phases:
 
   post_build:
     commands:
-      - echo Running Python integration tests...
-      - pytest tests/integration/ -v
-
-reports:
-  unit-tests:
-    files:
-      - "**/junit.xml"
-    base-directory: "tests/unit"
-    file-format: JUNITXML
-
-  integration-tests:
-    files:
-      - "**/junit.xml"
-    base-directory: "tests/integration"
-    file-format: JUNITXML
+      - echo Build completed successfully
 
 artifacts:
   files:

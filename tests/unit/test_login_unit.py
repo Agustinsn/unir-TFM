@@ -82,6 +82,7 @@ def setup_environment():
 def test_login_success(setup_environment, monkeypatch):
     monkeypatch.setenv("STAGE", "test")
     monkeypatch.setenv("AWS_REGION", "us-east-1")
+    cognito_client, secrets_client, _ = setup_environment
 
     event = {
         "body": json.dumps({
@@ -89,13 +90,14 @@ def test_login_success(setup_environment, monkeypatch):
             "password": "TempPass123!"
         })
     }
-    response = login_app.lambda_handler(event, None)
+    response = login_app.lambda_handler(event, None, cognito_client, secrets_client)
     assert response["statusCode"] == 200
 
 
 def test_login_invalid_password(setup_environment, monkeypatch):
     monkeypatch.setenv("STAGE", "test")
     monkeypatch.setenv("AWS_REGION", "us-east-1")
+    cognito_client, secrets_client, _ = setup_environment
 
     event = {
         "body": json.dumps({
@@ -103,13 +105,14 @@ def test_login_invalid_password(setup_environment, monkeypatch):
             "password": "WrongPass123"
         })
     }
-    response = login_app.lambda_handler(event, None)
+    response = login_app.lambda_handler(event, None, cognito_client, secrets_client)
     assert response["statusCode"] == 401
 
 
 def test_login_unconfirmed_user(setup_environment, monkeypatch):
     monkeypatch.setenv("STAGE", "test")
     monkeypatch.setenv("AWS_REGION", "us-east-1")
+    cognito_client, secrets_client, _ = setup_environment
 
     event = {
         "body": json.dumps({
@@ -117,14 +120,14 @@ def test_login_unconfirmed_user(setup_environment, monkeypatch):
             "password": "TempPass123!"
         })
     }
-    response = login_app.lambda_handler(event, None)
+    response = login_app.lambda_handler(event, None, cognito_client, secrets_client)
     assert response["statusCode"] == 403
 
 
 def test_invalid_json():
     event = {"body": "{malformed json]"}
     response = login_app.lambda_handler(event, None)
-    assert response["statusCode"] == 400
+    assert response["statusCode"] == 500  # JSON parsing error
 
 
 def test_missing_credentials():

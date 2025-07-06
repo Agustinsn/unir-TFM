@@ -21,14 +21,32 @@ def lambda_handler(event, context, cognito_client=None, secrets=None):
     client_id = os.getenv("USER_POOL_CLIENT_ID")
 
     if not user_pool_id or not client_id:
-        secrets_data = get_secret_values(SECRET_NAME, secrets)
-        user_pool_id = secrets_data.get("USER_POOL_ID")
-        client_id = secrets_data.get("USER_POOL_CLIENT_ID")
+        try:
+            secrets_data = get_secret_values(SECRET_NAME, secrets)
+            user_pool_id = secrets_data.get("USER_POOL_ID")
+            client_id = secrets_data.get("USER_POOL_CLIENT_ID")
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": f"Error getting secrets: {str(e)}"})
+            }
+
+    if not user_pool_id or not client_id:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Missing USER_POOL_ID or USER_POOL_CLIENT_ID"})
+        }
 
     try:
         body = json.loads(event["body"])
         email = body.get("email")
         password = body.get("password")
+
+        if not email or not password:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": "Missing email or password"})
+            }
 
         resp = cognito_client.admin_initiate_auth(
             UserPoolId=user_pool_id,
@@ -54,6 +72,11 @@ def lambda_handler(event, context, cognito_client=None, secrets=None):
         return {
             "statusCode": 403,
             "body": json.dumps({"message": "User not confirmed"})
+        }
+    except cognito_client.exceptions.UserNotFoundException:
+        return {
+            "statusCode": 401,
+            "body": json.dumps({"message": "Invalid email or password"})
         }
     except Exception as e:
         return {
