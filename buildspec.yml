@@ -58,16 +58,12 @@ phases:
     commands:
       - echo Building with SAM...
       - sam build
-      - echo Packaging SAM template to S3...
-      - sam package \
-        --s3-bucket $SAM_BUCKET \
-        --output-template-file packaged.yaml
 
   post_build:
     commands:
-      - echo Build and packaging complete.
+      - echo Build complete.
 
 artifacts:
   files:
-    - packaged.yaml
-  discard-paths: yes
+    - "**/*"
+  discard-paths: no
