@@ -58,10 +58,12 @@ phases:
     commands:
       - echo Building with SAM...
       - sam build
+      - echo Deploying with SAM...
+      - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
 
   post_build:
     commands:
-      - echo Build complete.
+      - echo Build and deploy complete.
 
 artifacts:
   files:
