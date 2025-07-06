@@ -448,6 +448,11 @@ Resources:
                   - s3:*
                   - iam:PassRole
                   - secretsmanager:GetSecretValue
+                  - cloudformation:*
+                  - lambda:*
+                  - logs:*
+                  - cloudwatch:PutMetricData
+                  - cognito-idp:*
                 Resource: "*"
 
   CodeBuildProject:
@@ -529,6 +534,7 @@ Resources:
                 StackName: !Sub user-app-${Stage}
                 TemplatePath: BuildOutput::template.yaml
                 Capabilities: CAPABILITY_IAM
+                RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
 
 Outputs:
