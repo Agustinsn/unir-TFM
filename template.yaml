@@ -459,6 +459,33 @@ Resources:
                   - iam:PassRole
                 Resource: !GetAtt CodeBuildRole.Arn
 
+CloudFormationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-CFNExecRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowCFNActions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - s3:GetObject
+                  - s3:GetBucketLocation
+                  - s3:PutObject
+                  - iam:PassRole
+                  - lambda:*
+                  - logs:*
+                Resource: "*"
+
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
