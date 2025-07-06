@@ -48,9 +48,13 @@ phases:
       - echo Installing Node.js dependencies...
       - cd src/register && npm install
       - cd ../..
+      - echo Configuring Python...
+      - python3.11 --version
+      - ln -sf /usr/bin/python3.11 /usr/bin/python
+      - python --version
       - echo Installing Python dependencies for SAM build...
-      - pip install --upgrade pip
-      - pip install -r requirements.txt
+      - pip3 install --upgrade pip
+      - pip3 install -r requirements.txt
 
   pre_build:
     commands:
