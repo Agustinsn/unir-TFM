@@ -449,6 +449,7 @@ Resources:
                   - iam:PassRole
                   - secretsmanager:GetSecretValue
                   - cloudformation:*
+                  - sts:AssumeRole
                   - lambda:*
                   - logs:*
                   - cloudwatch:PutMetricData
