@@ -454,6 +454,10 @@ Resources:
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: !GetAtt CodeBuildRole.Arn
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -516,7 +520,6 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProject
-                RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
         - Name: Deploy
           Actions:
