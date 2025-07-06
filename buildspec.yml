@@ -64,7 +64,7 @@ phases:
       - echo Building with SAM...
       - sam build
       - echo Deploying with SAM...
-      - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      - sam package --s3-bucket $ARTIFACT_BUCKET --output-template-file packaged.yaml
 
   post_build:
     commands:
@@ -72,5 +72,6 @@ phases:
 
 artifacts:
   files:
-    - "**/*"
+    - packaged.yaml
+      - "**/*"
   discard-paths: no

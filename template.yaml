@@ -419,6 +419,10 @@ Resources:
                   - cloudwatch:PutMetricData
                   - cognito-idp:AdminInitiateAuth
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                Resource: !GetAtt RegisterLambdaRole.Arn
         - PolicyName: AccessSecretsManager
           PolicyDocument:
             Version: "2012-10-17"
