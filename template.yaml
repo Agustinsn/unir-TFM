@@ -414,6 +414,7 @@ Resources:
                   - lambda:*
                   - logs:*
                   - s3:*
+                  - iam:GetRole
                   - iam:PassRole
                   - cloudwatch:PutMetricData
                   - cognito-idp:AdminInitiateAuth
