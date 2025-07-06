@@ -271,32 +271,32 @@ Resources:
             Path: /register
             Method: post
 
-  LoginUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: LoginUserFunction
-      CodeUri: src/login/
-      Handler: app.lambda_handler
-      Runtime: python3.11
-      Role: !GetAtt LoginLambdaRole.Arn
-      MemorySize: 128
-      Timeout: 10
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref LambdaSecurityGroup
-        SubnetIds:
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
-      Environment:
-        Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
-      Events:
-        LoginApi:
-          Type: Api
-          Properties:
-            Path: /login
-            Method: POST
+  # LoginUserFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: LoginUserFunction
+  #     CodeUri: src/login/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.11
+  #     Role: !GetAtt LoginLambdaRole.Arn
+  #     MemorySize: 128
+  #     Timeout: 10
+  #     VpcConfig:
+  #       SecurityGroupIds:
+  #         - !Ref LambdaSecurityGroup
+  #       SubnetIds:
+  #         - !Ref PrivateSubnet1
+  #         - !Ref PrivateSubnet2
+  #     Environment:
+  #       Variables:
+  #         USER_POOL_ID: !Ref UserPool
+  #         USER_POOL_CLIENT_ID: !Ref UserPoolClient
+  #     Events:
+  #       LoginApi:
+  #         Type: Api
+  #         Properties:
+  #           Path: /login
+  #           Method: POST
 
   # IAM Roles
 
@@ -570,9 +570,9 @@ Outputs:
     Value: !GetAtt RegisterLambdaRole.Arn
     Export:
       Name: !Sub "${AWS::StackName}-RegisterLambdaRoleArn"
-  LoginLambdaRoleArn:
-    Description: ARN del rol IAM para Lambda de login
-    Value: !GetAtt LoginLambdaRole.Arn
+  # LoginLambdaRoleArn:
+  #   Description: ARN del rol IAM para Lambda de login
+  #   Value: !GetAtt LoginLambdaRole.Arn
   SAMBucketName:
     Description: Nombre del bucket S3 para despliegues SAM
     Value: !Ref SAMBucket
