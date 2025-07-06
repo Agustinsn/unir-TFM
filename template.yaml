@@ -6,6 +6,10 @@ Parameters:
   BranchName:
     Type: String
     Default: main
+  Stage:
+    Type: String
+    Default: dev
+    Description: Environment stage (dev, staging, prod)
 
 Globals:
   Function:
@@ -15,7 +19,7 @@ Globals:
       - x86_64
 
 Resources:
-  # VPC & Networking 
+  # VPC & Networking
 
   MyVPC:
     Type: AWS::EC2::VPC
@@ -231,16 +235,35 @@ Resources:
       Handler: app.register
       Runtime: nodejs18.x
       Environment:
-        USER_POOL_ID: !Ref UserPool
-        CLIENT_ID: !Ref UserPoolClient
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref LambdaSecurityGroup
-        SubnetIds:
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
+        Variables:
+          USER_POOL_ID: !Ref UserPool
+          CLIENT_ID: !Ref UserPoolClient
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - !Ref LambdaSecurityGroup
+      #   SubnetIds:
+      #     - !Ref PrivateSubnet1
+      #     - !Ref PrivateSubnet2
       Policies:
-        - CognitoPowerUserPolicy
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:SignUp
+                - cognito-idp:AdminConfirmSignUp
+              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
       Events:
         ApiRegister:
           Type: Api
@@ -282,16 +305,18 @@ Resources:
     Properties:
       RoleName: RegisterLambdaRole
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
         - PolicyName: RegisterUserPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -304,12 +329,6 @@ Resources:
                   - cognito-idp:SignUp
                   - cognito-idp:AdminConfirmSignUp
                 Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
-              - Effect: Allow
-                Action:
-                  - ec2:CreateNetworkInterface
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:DeleteNetworkInterface
-                Resource: "*"
               - Effect: Allow
                 Action:
                   - cloudwatch:PutMetricData
@@ -346,13 +365,31 @@ Resources:
                 Action:
                   - cloudwatch:PutMetricData
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource: "*"
 
-  # Artifact Bucket
+  # S3 Buckets
 
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "user-app-artifacts-bucket-${AWS::AccountId}"
+
+  SAMBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "sam-deployments-${AWS::AccountId}-${Stage}"
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
   # CI/CD Roles & Projects
 
@@ -478,7 +515,13 @@ Resources:
         - Name: Deploy
           Actions:
             - Name: SamDeploy
-              ActionTypeId: {Category: Deploy, Owner: AWS, Provider: CloudFormation, Version: 1}
+              ActionTypeId:
+                {
+                  Category: Deploy,
+                  Owner: AWS,
+                  Provider: CloudFormation,
+                  Version: 1,
+                }
               InputArtifacts:
                 - Name: BuildOutput
               Configuration:
@@ -514,8 +557,16 @@ Outputs:
     Description: ID del App Client
     Value: !Ref UserPoolClient
   RegisterLambdaRoleArn:
-    Description: ARN del rol IAM para Lambda de registro
+    Description: "ARN of the Register Lambda execution role"
     Value: !GetAtt RegisterLambdaRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RegisterLambdaRoleArn"
   LoginLambdaRoleArn:
     Description: ARN del rol IAM para Lambda de login
     Value: !GetAtt LoginLambdaRole.Arn
+  SAMBucketName:
+    Description: Nombre del bucket S3 para despliegues SAM
+    Value: !Ref SAMBucket
+  ArtifactBucketName:
+    Description: Nombre del bucket S3 para artifacts
+    Value: !Ref ArtifactBucket

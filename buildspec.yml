@@ -37,30 +37,37 @@ version: 0.2
 env:
   variables:
     NODE_ENV: test
+    AWS_DEFAULT_REGION: us-east-1
 
 phases:
   install:
     runtime-versions:
       nodejs: 18
+      python: 3.11
     commands:
-      - echo Installing dependencies...
-      - npm ci
+      - echo Installing Node.js dependencies for register function...
+      - cd src/register && npm install
+      - cd ../..
+      - echo Installing Python dependencies...
+      - pip install --upgrade pip
+      - pip install -r requirements.txt
+      - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
 
   pre_build:
     commands:
-      - echo Running unit tests...
-      - npm test -- --testPathPattern="tests/unit" --ci --reporters=default --reporters=jest-junit
+      - echo Running Python unit tests...
+      - export PYTHONPATH=$PWD/src:$PYTHONPATH
+      - pytest tests/unit/ -v
 
   build:
     commands:
       - echo Packaging with SAM...
       - sam build
-      - sam deploy --guided --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --no-confirm-changeset --no-fail-on-empty-changeset --stack-name user-app-${STAGE}
 
   post_build:
     commands:
-      - echo Running integration tests...
-      - npm test -- --testPathPattern="tests/integration" --ci --reporters=default --reporters=jest-junit
+      - echo Running Python integration tests...
+      - pytest tests/integration/ -v
 
 reports:
   unit-tests:
@@ -74,3 +81,8 @@ reports:
       - "**/junit.xml"
     base-directory: "tests/integration"
     file-format: JUNITXML
+
+artifacts:
+  files:
+    - "**/*"
+  discard-paths: no

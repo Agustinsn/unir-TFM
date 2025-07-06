@@ -20,7 +20,7 @@ stack_name = "infra-userapp"
 s3_prefix = "infra-userapp"
 region = "us-east-1"
 image_repositories = []
-parameter_overrides = "BranchName=\"main\""
+parameter_overrides = "BranchName=\"master\" Stage=\"dev\""
 
 [default.package.parameters]
 resolve_s3 = true
