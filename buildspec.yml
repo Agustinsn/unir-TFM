@@ -43,11 +43,12 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
-      python: 3.11
     commands:
       - echo Installing Node.js dependencies...
       - cd src/register && npm install
       - cd ../..
+      - echo Verifying Python installation...
+      - python --version
       - echo Installing Python dependencies for SAM build...
       - pip install --upgrade pip
       - pip install -r requirements.txt
