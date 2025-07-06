@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "node --test app.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.0.0"
@@ -13,11 +13,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "extensionsToTreatAsEsm": [".js"],
-    "globals": {
-      "ts-jest": {
-        "useESM": true
-      }
-    }
+    "preset": "default"
   }
 } 
