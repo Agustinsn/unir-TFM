@@ -437,6 +437,10 @@ Resources:
             Principal:
               Service: codepipeline.amazonaws.com
             Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: PipelinePolicy
           PolicyDocument:
@@ -459,6 +463,19 @@ Resources:
                 Action:
                   - iam:PassRole
                 Resource: !GetAtt CodeBuildRole.Arn
+        - PolicyName: CloudFormationPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetBucketLocation
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}"
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}/*"
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project

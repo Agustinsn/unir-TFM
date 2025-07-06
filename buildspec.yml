@@ -36,8 +36,8 @@ version: 0.2
 
 env:
   variables:
-    NODE_ENV: test
     AWS_DEFAULT_REGION: us-east-1
+    SAM_BUCKET: your-sam-deployments-bucket # <- ajusta este nombre
 
 phases:
   install:
@@ -56,14 +56,18 @@ phases:
 
   build:
     commands:
-      - echo Packaging with SAM...
+      - echo "Building with SAM..."
       - sam build
+      - echo "Packaging SAM template..."
+      - sam package \
+        --s3-bucket $SAM_BUCKET \
+        --output-template-file packaged.yaml
 
   post_build:
     commands:
-      - echo Build completed successfully
+      - echo "Build and package completed successfully"
 
 artifacts:
   files:
-    - "**/*"
-  discard-paths: no
+    - "packaged.yaml"
+  discard-paths: yes
