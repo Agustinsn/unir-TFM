@@ -516,6 +516,7 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProject
+                RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
         - Name: Deploy
           Actions:
