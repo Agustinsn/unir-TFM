@@ -459,7 +459,7 @@ Resources:
                   - iam:PassRole
                 Resource: !GetAtt CodeBuildRole.Arn
 
-CloudFormationExecutionRole:
+  CloudFormationExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub "${AWS::StackName}-CFNExecRole"
