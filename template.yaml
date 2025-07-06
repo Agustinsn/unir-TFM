@@ -459,37 +459,6 @@ Resources:
                 Action:
                   - iam:PassRole
                 Resource: !GetAtt CodeBuildRole.Arn
-              - Effect: Allow
-                Action:
-                  - iam:PassRole
-                Resource: !GetAtt CloudFormationExecutionRole.Arn
-
-  CloudFormationExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub "${AWS::StackName}-CFNExecRole"
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cloudformation.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: AllowCFNActions
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cloudformation:*
-                  - s3:GetObject
-                  - s3:GetBucketLocation
-                  - s3:PutObject
-                  - iam:PassRole
-                  - lambda:*
-                  - logs:*
-                Resource: "*"
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -568,7 +537,7 @@ Resources:
                 StackName: !Sub user-app-${Stage}
                 TemplatePath: BuildOutput::template.yaml
                 Capabilities: CAPABILITY_IAM
-                RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
 
 Outputs:
