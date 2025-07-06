@@ -5,7 +5,7 @@ codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-on
 runtime = "nodejs18.x"
 architecture = "x86_64"
 handler = "app.register"
-manifest_hash = "c2bbd70182bac6048e29cc7c6c71558f"
+manifest_hash = "3a75a6be9f1f44d42dce5b858cb81d67"
 packagetype = "Zip"
 functions = ["RegisterUserFunction"]
 

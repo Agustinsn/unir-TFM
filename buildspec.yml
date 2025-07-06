@@ -44,13 +44,13 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo Installing dependencies...
+      - echo Installing Node.js dependencies...
       - cd src/register && npm install
       - cd ../..
 
   pre_build:
     commands:
-      - echo Running unit tests...
+      - echo Running Node.js unit tests...
       - cd src/register && npm test
       - cd ../..
 
