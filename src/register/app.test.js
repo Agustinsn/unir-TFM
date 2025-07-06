@@ -3,33 +3,23 @@ import assert from 'node:assert';
 import { register } from './app.js';
 
 // Mock del cliente de Cognito
-const mockCognitoClient = {
-  send: (command) => {
-    // Simular el comportamiento del mock
-    if (mockCognitoClient.shouldFail) {
-      throw mockCognitoClient.error;
+function createMockCognitoClient(shouldFail = false, error = null) {
+  return {
+    send: (command) => {
+      if (shouldFail) {
+        throw error;
+      }
+      return Promise.resolve({});
     }
-    return Promise.resolve({});
-  },
-  shouldFail: false,
-  error: null
-};
-
-// Mock de process.env
-const originalEnv = process.env;
+  };
+}
 
 describe('register function', () => {
-  beforeEach(() => {
-    process.env = { ...originalEnv, CLIENT_ID: 'test-client-id' };
-    mockCognitoClient.shouldFail = false;
-    mockCognitoClient.error = null;
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
   test('should register user successfully', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
     const event = {
       body: JSON.stringify({
         email: 'test@example.com',
@@ -44,6 +34,10 @@ describe('register function', () => {
   });
 
   test('should return 400 for missing email', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
     const event = {
       body: JSON.stringify({
         password: 'TestPass123!'
@@ -57,6 +51,10 @@ describe('register function', () => {
   });
 
   test('should return 400 for missing password', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
     const event = {
       body: JSON.stringify({
         email: 'test@example.com'
@@ -70,10 +68,12 @@ describe('register function', () => {
   });
 
   test('should return 409 for existing user', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
     const error = new Error('UsernameExistsException');
     error.name = 'UsernameExistsException';
-    mockCognitoClient.shouldFail = true;
-    mockCognitoClient.error = error;
+    const mockCognitoClient = createMockCognitoClient(true, error);
 
     const event = {
       body: JSON.stringify({
@@ -89,9 +89,11 @@ describe('register function', () => {
   });
 
   test('should return 500 for other errors', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
     const error = new Error('Some other error');
-    mockCognitoClient.shouldFail = true;
-    mockCognitoClient.error = error;
+    const mockCognitoClient = createMockCognitoClient(true, error);
 
     const event = {
       body: JSON.stringify({
