@@ -37,37 +37,37 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: us-east-1
-    SAM_BUCKET: your-sam-deployments-bucket # <- ajusta este nombre
+    SAM_BUCKET: sam-deployments-youraccount-${STAGE}
 
 phases:
   install:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo Installing Node.js dependencies for register function...
+      - echo Installing dependencies...
       - cd src/register && npm install
       - cd ../..
 
   pre_build:
     commands:
-      - echo Running Node.js unit tests...
+      - echo Running unit tests...
       - cd src/register && npm test
       - cd ../..
 
   build:
     commands:
-      - echo "Building with SAM..."
+      - echo Building with SAM...
       - sam build
-      - echo "Packaging SAM template..."
+      - echo Packaging SAM template to S3...
       - sam package \
         --s3-bucket $SAM_BUCKET \
         --output-template-file packaged.yaml
 
   post_build:
     commands:
-      - echo "Build and package completed successfully"
+      - echo Build and packaging complete.
 
 artifacts:
   files:
-    - "packaged.yaml"
+    - packaged.yaml
   discard-paths: yes
