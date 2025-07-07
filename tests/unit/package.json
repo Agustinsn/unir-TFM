@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --test app.test.js"
+    "test": "node --test register.test.js login.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.0.0"

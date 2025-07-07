@@ -14,7 +14,7 @@ codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-on
 runtime = "nodejs18.x"
 architecture = "x86_64"
 handler = "app.login"
-manifest_hash = ""
+manifest_hash = "01bb65a1c186fb4e5cdd7cf1dfa5b0b6"
 packagetype = "Zip"
 functions = ["LoginUserFunction"]
 

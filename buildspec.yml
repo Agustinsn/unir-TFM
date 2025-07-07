@@ -47,6 +47,8 @@ phases:
       - echo Installing Node.js dependencies...
       - cd src/register && npm install
       - cd ../..
+      - cd src/login && npm install
+      - cd ../..
       - echo Verifying Python installation...
       - python --version
       - echo Installing Python dependencies for SAM build...
@@ -56,7 +58,6 @@ phases:
   pre_build:
     commands:
       - echo Running Node.js unit tests...
-      # - cd src/register && npm test
       - cd tests/unit && npm test
       - cd ../..
 
@@ -74,5 +75,4 @@ phases:
 artifacts:
   files:
     - packaged.yaml
-      - "**/*"
-  discard-paths: no
+  discard-paths: yes
