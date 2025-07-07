@@ -201,33 +201,6 @@ Resources:
 
   ## ========== Lambdas ==========
 
-  # RegisterUserFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: RegisterUserFunction
-  #     CodeUri: src/register/
-  #     Handler: app.lambda_handler
-  #     Runtime: python3.11
-  #     Role: !GetAtt RegisterLambdaRole.Arn
-  #     MemorySize: 128
-  #     Timeout: 10
-  #     VpcConfig:
-  #       SecurityGroupIds:
-  #         - !Ref LambdaSecurityGroup
-  #       SubnetIds:
-  #         - !Ref PrivateSubnet1
-  #         - !Ref PrivateSubnet2
-  #     Environment:
-  #       Variables:
-  #         USER_POOL_ID: !Ref UserPool
-  #         USER_POOL_CLIENT_ID: !Ref UserPoolClient
-  #     Events:
-  #       ApiRegister:
-  #         Type: Api
-  #         Properties:
-  #           Path: /register
-  #           Method: post
-
   RegisterUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -533,7 +506,7 @@ Resources:
               RunOrder: 1
         - Name: Build
           Actions:
-            - Name: BuildAndDeploy
+            - Name: Build
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -544,6 +517,23 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: SamDeploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            StackName: !Sub user-app-stack-${Stage}
+            Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+            TemplatePath: SourceOutput::packaged.yaml
+            RoleArn: !GetAtt CodePipelineRole.Arn
+          RunOrder: 1
 
 Outputs:
   VpcId:

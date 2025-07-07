@@ -1,34 +1,110 @@
-import { register } from "../app";
-import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { test, describe } from 'node:test';
+import assert from 'node:assert';
+import { register } from '../../src/register/app.js';
 
-jest.mock("@aws-sdk/client-cognito-identity-provider", () => {
-    const mClient = { send: jest.fn() };
-    return {
-        CognitoIdentityProviderClient: jest.fn(() => mClient),
-        SignUpCommand: jest.fn((args) => args)
+// Mock del cliente de Cognito
+function createMockCognitoClient(shouldFail = false, error = null) {
+  return {
+    send: (command) => {
+      if (shouldFail) {
+        throw error;
+      }
+      return Promise.resolve({});
+    }
+  };
+}
+
+describe('register function', () => {
+  test('should register user successfully', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
+    const event = {
+      body: JSON.stringify({
+        email: 'test@example.com',
+        password: 'TestPass123!'
+      })
     };
-});
 
-describe("register()", () => {
-    beforeEach(() => jest.clearAllMocks());
+    const result = await register(event, null, mockCognitoClient);
 
-    test("400 si faltan datos", async () => {
-        const res = await register({ body: JSON.stringify({ email: "a@b.c" }) });
-        expect(res.statusCode).toBe(400);
-    });
+    assert.strictEqual(result.statusCode, 201);
+    assert.deepStrictEqual(JSON.parse(result.body), { message: 'user registered' });
+  });
 
-    test("201 y llamada a Cognito cuando datos correctos", async () => {
-        const res = await register({ body: JSON.stringify({ email: "a@b.c", password: "Passw0rd!" }) });
-        expect(res.statusCode).toBe(201);
-        const client = CognitoIdentityProviderClient.mock.results[0].value;
-        expect(client.send).toHaveBeenCalledWith(expect.any(SignUpCommand));
-    });
+  test('should return 400 for missing email', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
+    const event = {
+      body: JSON.stringify({
+        password: 'TestPass123!'
+      })
+    };
 
-    test("500 en error de Cognito", async () => {
-        const client = CognitoIdentityProviderClient.mock.results[0].value;
-        client.send.mockRejectedValueOnce(new Error("fail"));
-        const res = await register({ body: JSON.stringify({ email: "x@y.z", password: "P@sswd123" }) });
-        expect(res.statusCode).toBe(500);
-        expect(JSON.parse(res.body)).toHaveProperty("error");
-    });
-});
+    const result = await register(event, null, mockCognitoClient);
+
+    assert.strictEqual(result.statusCode, 400);
+    assert.deepStrictEqual(JSON.parse(result.body), { message: 'email & password required' });
+  });
+
+  test('should return 400 for missing password', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const mockCognitoClient = createMockCognitoClient();
+    const event = {
+      body: JSON.stringify({
+        email: 'test@example.com'
+      })
+    };
+
+    const result = await register(event, null, mockCognitoClient);
+
+    assert.strictEqual(result.statusCode, 400);
+    assert.deepStrictEqual(JSON.parse(result.body), { message: 'email & password required' });
+  });
+
+  test('should return 409 for existing user', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const error = new Error('UsernameExistsException');
+    error.name = 'UsernameExistsException';
+    const mockCognitoClient = createMockCognitoClient(true, error);
+
+    const event = {
+      body: JSON.stringify({
+        email: 'existing@example.com',
+        password: 'TestPass123!'
+      })
+    };
+
+    const result = await register(event, null, mockCognitoClient);
+
+    assert.strictEqual(result.statusCode, 409);
+    assert.deepStrictEqual(JSON.parse(result.body), { message: 'user already exists' });
+  });
+
+  test('should return 500 for other errors', async () => {
+    // Configurar environment
+    process.env.CLIENT_ID = 'test-client-id';
+    
+    const error = new Error('Some other error');
+    const mockCognitoClient = createMockCognitoClient(true, error);
+
+    const event = {
+      body: JSON.stringify({
+        email: 'test@example.com',
+        password: 'TestPass123!'
+      })
+    };
+
+    const result = await register(event, null, mockCognitoClient);
+
+    assert.strictEqual(result.statusCode, 500);
+    assert.deepStrictEqual(JSON.parse(result.body), { error: 'Some other error' });
+  });
+}); 
