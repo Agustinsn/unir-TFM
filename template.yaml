@@ -535,7 +535,7 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 StackName: !Sub user-app-stack-${Stage}
-                Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+                Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
                 TemplatePath: BuildOutput::packaged.yaml
                 RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
