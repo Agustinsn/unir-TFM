@@ -56,7 +56,8 @@ phases:
   pre_build:
     commands:
       - echo Running Node.js unit tests...
-      - cd src/register && npm test
+      # - cd src/register && npm test
+      - cd test/unit && npm test
       - cd ../..
 
   build:

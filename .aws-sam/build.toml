@@ -9,13 +9,4 @@ manifest_hash = "3a75a6be9f1f44d42dce5b858cb81d67"
 packagetype = "Zip"
 functions = ["RegisterUserFunction"]
 
-[function_build_definitions.a4b6cb13-3611-4dee-b679-22f548ce0b5a]
-codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-only\\src\\login"
-runtime = "python3.11"
-architecture = "x86_64"
-handler = "app.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["LoginUserFunction"]
-
 [layer_build_definitions]
