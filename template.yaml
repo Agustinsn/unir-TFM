@@ -352,7 +352,7 @@ Resources:
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "user-app-artifacts-bucket-${AWS::AccountId}"
+      BucketName: !Sub "user-app-artifacts-${Stage}-${AWS::AccountId}"
 
   SAMBucket:
     Type: AWS::S3::Bucket
