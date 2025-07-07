@@ -357,7 +357,7 @@ Resources:
   SAMBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "sam-deployments-${AWS::AccountId}-${Stage}"
+      BucketName: !Sub "sam-deployments-${AWS::AccountId}-${Stage}-${AWS::StackName}"
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -438,6 +438,10 @@ Resources:
                   - logs:*
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
+                  - ec2:AllocateAddress
+                  - ec2:AssociateAddress
+                  - ec2:CreateNatGateway
+                  - ec2:DescribeAddresses
                 Resource: "*"
               - Effect: Allow
                 Action:
