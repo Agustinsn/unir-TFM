@@ -211,12 +211,6 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref UserPool
           CLIENT_ID: !Ref UserPoolClient
-      # VpcConfig:
-      #   SecurityGroupIds:
-      #     - !Ref LambdaSecurityGroup
-      #   SubnetIds:
-      #     - !Ref PrivateSubnet1
-      #     - !Ref PrivateSubnet2
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -244,32 +238,40 @@ Resources:
             Path: /register
             Method: post
 
-  # LoginUserFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: LoginUserFunction
-  #     CodeUri: src/login/
-  #     Handler: app.lambda_handler
-  #     Runtime: python3.11
-  #     Role: !GetAtt LoginLambdaRole.Arn
-  #     MemorySize: 128
-  #     Timeout: 10
-  #     VpcConfig:
-  #       SecurityGroupIds:
-  #         - !Ref LambdaSecurityGroup
-  #       SubnetIds:
-  #         - !Ref PrivateSubnet1
-  #         - !Ref PrivateSubnet2
-  #     Environment:
-  #       Variables:
-  #         USER_POOL_ID: !Ref UserPool
-  #         USER_POOL_CLIENT_ID: !Ref UserPoolClient
-  #     Events:
-  #       LoginApi:
-  #         Type: Api
-  #         Properties:
-  #           Path: /login
-  #           Method: POST
+  LoginUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/login/
+      Handler: app.login
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          CLIENT_ID: !Ref UserPoolClient
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:InitiateAuth
+              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
+      Events:
+        ApiRegister:
+          Type: Api
+          Properties:
+            Path: /login
+            Method: post
 
   # IAM Roles
 
@@ -515,6 +517,8 @@ Resources:
                 Version: 1
               InputArtifacts:
                 - Name: SourceOutput
+              OutputArtifacts:
+                - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
@@ -527,12 +531,12 @@ Resources:
                 Provider: CloudFormation
                 Version: 1
               InputArtifacts:
-                - Name: SourceOutput
+                - Name: BuildOutput
               Configuration:
                 ActionMode: CREATE_UPDATE
                 StackName: !Sub user-app-stack-${Stage}
                 Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
-                TemplatePath: SourceOutput::packaged.yaml
+                TemplatePath: BuildOutput::packaged.yaml
                 RoleArn: !GetAtt CodePipelineRole.Arn
               RunOrder: 1
 

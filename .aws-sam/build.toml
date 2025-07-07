@@ -9,4 +9,13 @@ manifest_hash = "3a75a6be9f1f44d42dce5b858cb81d67"
 packagetype = "Zip"
 functions = ["RegisterUserFunction"]
 
+[function_build_definitions.a4282618-b51e-44e4-94ec-9ca7387a1cc6]
+codeuri = "C:\\Users\\agust\\Desktop\\MASTER-DEVOPS\\TFM\\Proyecto\\sam-infra-only\\src\\login"
+runtime = "nodejs18.x"
+architecture = "x86_64"
+handler = "app.login"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["LoginUserFunction"]
+
 [layer_build_definitions]
