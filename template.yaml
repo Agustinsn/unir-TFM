@@ -354,17 +354,17 @@ Resources:
     Properties:
       BucketName: !Sub "user-app-artifacts-${AWS::AccountId}-${AWS::StackName}-${Stage}"
 
-  SAMBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub "sam-deployments-${AWS::AccountId}-${Stage}-${AWS::StackName}"
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+  # SAMBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: !Sub "sam-deployments-${AWS::AccountId}-${Stage}-${AWS::StackName}"
+  #     VersioningConfiguration:
+  #       Status: Enabled
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: true
+  #       BlockPublicPolicy: true
+  #       IgnorePublicAcls: true
+  #       RestrictPublicBuckets: true
 
   # CI/CD Roles & Projects
 
@@ -442,6 +442,8 @@ Resources:
                   - ec2:AssociateAddress
                   - ec2:CreateNatGateway
                   - ec2:DescribeAddresses
+                  - ec2:DisassociateAddress
+                  - ec2:ReleaseAddress
                 Resource: "*"
               - Effect: Allow
                 Action:
@@ -577,9 +579,9 @@ Outputs:
   # LoginLambdaRoleArn:
   #   Description: ARN del rol IAM para Lambda de login
   #   Value: !GetAtt LoginLambdaRole.Arn
-  SAMBucketName:
-    Description: Nombre del bucket S3 para despliegues SAM
-    Value: !Ref SAMBucket
+  # SAMBucketName:
+  #   Description: Nombre del bucket S3 para despliegues SAM
+  #   Value: !Ref SAMBucket
   ArtifactBucketName:
     Description: Nombre del bucket S3 para artifacts
     Value: !Ref ArtifactBucket

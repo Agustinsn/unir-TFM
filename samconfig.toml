@@ -1,35 +1,11 @@
-# More information about the configuration file can be found here:
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
 version = 0.1
 
-[default.global.parameters]
-stack_name = "sam-infra-only"
-
-[default.build.parameters]
-cached = true
-parallel = true
-
-[default.validate.parameters]
-lint = true
-
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
-confirm_changeset = true
+stack_name = "tfm-unir"
 resolve_s3 = true
-stack_name = "infra-userapp"
-s3_prefix = "infra-userapp"
+s3_prefix = "tfm-unir"
 region = "us-east-1"
-image_repositories = []
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
 parameter_overrides = "BranchName=\"master\" Stage=\"dev\""
-
-[default.package.parameters]
-resolve_s3 = true
-
-[default.sync.parameters]
-watch = true
-
-[default.local_start_api.parameters]
-warm_containers = "EAGER"
-
-[default.local_start_lambda.parameters]
-warm_containers = "EAGER"
+image_repositories = []
+confirm_changeset = true

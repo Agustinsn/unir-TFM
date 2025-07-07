@@ -37,7 +37,7 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: us-east-1
-    SAM_BUCKET: sam-deployments-youraccount-${STAGE}
+    # SAM_BUCKET: sam-deployments-youraccount-${STAGE}
 
 phases:
   install:
