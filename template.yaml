@@ -463,7 +463,8 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: public.ecr.aws/sam/build-python3.11:latest
+        # Image: public.ecr.aws/sam/build-python3.11:latest
+        Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
         PrivilegedMode: true
         EnvironmentVariables:
