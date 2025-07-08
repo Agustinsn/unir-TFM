@@ -152,6 +152,10 @@ Resources:
                   - s3:GetBucketLocation
                   - iam:GetRole
                   - iam:PassRole
+                  - iam:CreateRole
+                  - iam:PutRolePolicy
+                  - iam:AttachRolePolicy
+                  - tag:*
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
                   - secretsmanager:GetSecretValue
@@ -188,6 +192,10 @@ Resources:
                   - s3:ListBucket
                   - s3:GetBucketLocation
                   - iam:PassRole
+                  - iam:CreateRole
+                  - iam:PutRolePolicy
+                  - iam:AttachRolePolicy
+                  - tag:*
                   - cognito-idp:*
                   - secretsmanager:GetSecretValue
                 Resource: "*"
