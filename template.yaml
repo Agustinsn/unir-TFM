@@ -137,20 +137,23 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  # codebuild
                   - codebuild:StartBuild
                   - codebuild:BatchGetBuilds
+                  # codepipeline
                   - codepipeline:PutJobSuccessResult
                   - codepipeline:PutJobFailureResult
+                  # cloudformation
                   - cloudformation:DescribeStacks
                   - cloudformation:DescribeStackResources
                   - cloudformation:GetTemplate
                   - cloudformation:ValidateTemplate
-                  - lambda:*
-                  - logs:*
+                  # s3
                   - s3:CreateBucket
                   - s3:GetObject
                   - s3:PutObject
                   - s3:GetBucketLocation
+                  # iam
                   - iam:GetRole
                   - iam:PassRole
                   - iam:CreateRole
@@ -158,6 +161,9 @@ Resources:
                   - iam:AttachRolePolicy
                   - iam:TagRole
                   - iam:UntagRole
+                  # others
+                  - lambda:*
+                  - logs:*
                   - tag:*
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
@@ -202,9 +208,6 @@ Resources:
                   - codebuild:CreateProject
                   - codebuild:UpdateProject
                   - codebuild:BatchGetProjects
-                  - cloudformation:*
-                  - lambda:*
-                  - logs:*
                   # s3
                   - s3:CreateBucket
                   - s3:GetObject
@@ -219,6 +222,10 @@ Resources:
                   - iam:AttachRolePolicy
                   - iam:TagRole
                   - iam:UntagRole
+                  # other
+                  - cloudformation:*
+                  - lambda:*
+                  - logs:*
                   - tag:*
                   - cognito-idp:*
                   - secretsmanager:GetSecretValue
