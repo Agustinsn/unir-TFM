@@ -167,6 +167,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
                   - codepipeline:PutJobSuccessResult
                   - codepipeline:PutJobFailureResult
                   - cloudformation:*
