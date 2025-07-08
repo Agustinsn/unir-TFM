@@ -429,26 +429,29 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - codebuild:*
-                  - s3:*
-                  - iam:PassRole
-                  - secretsmanager:GetSecretValue
-                  - cloudformation:*
-                  - sts:AssumeRole
-                  - lambda:*
-                  - logs:*
-                  - cloudwatch:PutMetricData
-                  - cognito-idp:*
-                  - ec2:AllocateAddress
-                  - ec2:AssociateAddress
-                  - ec2:CreateNatGateway
-                  - ec2:DescribeAddresses
-                  - ec2:DisassociateAddress
-                  - ec2:ReleaseAddress
+                  - ec2:CreateVpc
+                  - ec2:DescribeVpcs
+                  - ec2:CreateSubnet
                   - ec2:CreateInternetGateway
                   - ec2:AttachInternetGateway
-                  - ec2:DeleteInternetGateway
+                  - ec2:AllocateAddress
+                  - ec2:CreateNatGateway
+                  - ec2:DescribeAddresses
+                  - ec2:CreateRouteTable
+                  - ec2:CreateRoute
+                  - ec2:AssociateRouteTable
+                  - ec2:ModifySubnetAttribute
+                  - ec2:DescribeRouteTables
+                  - ec2:DescribeSubnets
                   - ec2:DescribeInternetGateways
+                  - ec2:DescribeNatGateways
+                  - cloudformation:*
+                  - lambda:*
+                  - logs:*
+                  - iam:PassRole
+                  - s3:*
+                  - cognito-idp:*
+                  - secretsmanager:GetSecretValue
                 Resource: "*"
               - Effect: Allow
                 Action:
