@@ -23,7 +23,7 @@ export async function register(event, context, cognitoClient = null) {
         return { statusCode: 201, body: JSON.stringify({ message: "user registered" }) };
     } catch (err) {
         if (err.name === 'UsernameExistsException') {
-            return { statusCode: 409, body: JSON.stringify({ message: "user already exists" }) };
+            return { statusCode: 409, body: JSON.stringify({ message: "user already exists, try to login" }) };
         }
         return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
     }

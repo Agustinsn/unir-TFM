@@ -183,12 +183,20 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  # codepipeline
                   - codepipeline:CreatePipeline
                   - codepipeline:UpdatePipeline
                   - codepipeline:GetPipeline
                   - codepipeline:DeletePipeline
                   - codepipeline:PutJobSuccessResult
                   - codepipeline:PutJobFailureResult
+                  # apigateway
+                  - apigateway:POST
+                  - apigateway:PATCH
+                  - apigateway:PUT
+                  - apigateway:GET
+                  - apigateway:DELETE
+                  # codebuild
                   - codebuild:StartBuild
                   - codebuild:BatchGetBuilds
                   - codebuild:CreateProject
@@ -197,11 +205,13 @@ Resources:
                   - cloudformation:*
                   - lambda:*
                   - logs:*
+                  # s3
                   - s3:CreateBucket
                   - s3:GetObject
                   - s3:PutObject
                   - s3:ListBucket
                   - s3:GetBucketLocation
+                  # iam
                   - iam:GetRole
                   - iam:PassRole
                   - iam:CreateRole
@@ -234,7 +244,7 @@ Resources:
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub "user-app-tfm-pipeline-${Stage}"
+      # Name: !Sub "user-app-tfm-pipeline-${Stage}"
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:
         Type: S3
