@@ -126,6 +126,10 @@ Resources:
             Principal:
               Service: codebuild.amazonaws.com
             Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: BuildPolicy
           PolicyDocument:
@@ -133,6 +137,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codepipeline:PutJobSuccessResult
+                  - codepipeline:PutJobFailureResult
                   - cloudformation:DescribeStacks
                   - cloudformation:DescribeStackResources
                   - cloudformation:GetTemplate
