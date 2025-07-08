@@ -133,14 +133,20 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - cloudformation:*
+                  - cloudformation:DescribeStacks
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:GetTemplate
+                  - cloudformation:ValidateTemplate
                   - lambda:*
                   - logs:*
-                  - s3:*
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetBucketLocation
                   - iam:GetRole
                   - iam:PassRole
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
+                  - secretsmanager:GetSecretValue
                 Resource: "*"
 
   CodePipelineRole:
@@ -160,12 +166,19 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - codebuild:StartBuild
+                  - codepipeline:PutJobSuccessResult
+                  - codepipeline:PutJobFailureResult
                   - cloudformation:*
                   - lambda:*
                   - logs:*
-                  - s3:*
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
                   - iam:PassRole
                   - cognito-idp:*
+                  - secretsmanager:GetSecretValue
                 Resource: "*"
 
   ## ========== CodeBuild & CodePipeline ==========
