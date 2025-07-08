@@ -156,6 +156,8 @@ Resources:
                   - iam:CreateRole
                   - iam:PutRolePolicy
                   - iam:AttachRolePolicy
+                  - iam:TagRole
+                  - iam:UntagRole
                   - tag:*
                   - cloudwatch:PutMetricData
                   - cognito-idp:*
@@ -197,6 +199,8 @@ Resources:
                   - iam:CreateRole
                   - iam:PutRolePolicy
                   - iam:AttachRolePolicy
+                  - iam:TagRole
+                  - iam:UntagRole
                   - tag:*
                   - cognito-idp:*
                   - secretsmanager:GetSecretValue
