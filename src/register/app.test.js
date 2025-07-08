@@ -85,7 +85,7 @@ describe('register function', () => {
     const result = await register(event, null, mockCognitoClient);
 
     assert.strictEqual(result.statusCode, 409);
-    assert.deepStrictEqual(JSON.parse(result.body), { message: 'user already exists' });
+    assert.deepStrictEqual(JSON.parse(result.body), { message: 'user already exists, try to login' });
   });
 
   test('should return 500 for other errors', async () => {
