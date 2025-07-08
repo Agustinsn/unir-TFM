@@ -147,6 +147,7 @@ Resources:
                   - cloudformation:ValidateTemplate
                   - lambda:*
                   - logs:*
+                  - s3:CreateBucket
                   - s3:GetObject
                   - s3:PutObject
                   - s3:GetBucketLocation
@@ -187,6 +188,7 @@ Resources:
                   - cloudformation:*
                   - lambda:*
                   - logs:*
+                  - s3:CreateBucket
                   - s3:GetObject
                   - s3:PutObject
                   - s3:ListBucket
