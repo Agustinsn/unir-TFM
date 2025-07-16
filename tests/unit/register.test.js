@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
-import { register } from '../../src/register/app.js';
+import register from '../../src/register/app.js';
 
 // Mock del cliente de Cognito
 function createMockCognitoClient(shouldFail = false, error = null) {

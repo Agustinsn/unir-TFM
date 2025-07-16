@@ -5,7 +5,7 @@ import {
 
 const client = new CognitoIdentityProviderClient({});
 
-export async function register(event, context, cognitoClient = null) {
+export default async function register(event, context, cognitoClient = null) {
     const cognito = cognitoClient || client;
 
     console.log("Lambda invoked");
