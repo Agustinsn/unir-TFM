@@ -7,6 +7,11 @@ const client = new CognitoIdentityProviderClient({});
 
 export async function register(event, context, cognitoClient = null) {
     const cognito = cognitoClient || client;
+
+    console.log("Lambda invoked");
+    console.log("typeof cognito:", typeof cognito);
+    console.log("typeof cognito.send:", typeof cognito?.send);
+    console.log("client instance class name:", client.constructor.name);
     
     const body = JSON.parse(event.body || "{}");
     const { email, password } = body;

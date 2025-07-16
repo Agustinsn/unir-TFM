@@ -258,6 +258,7 @@ Resources:
                   - iam:CreateRole
                   - iam:PutRolePolicy
                   - iam:AttachRolePolicy
+                  - iam:DeleteRolePolicy
                   - iam:TagRole
                   - iam:UntagRole
                   # other
@@ -289,7 +290,6 @@ Resources:
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      # Name: !Sub "user-app-tfm-pipeline-${Stage}"
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:
         Type: S3
