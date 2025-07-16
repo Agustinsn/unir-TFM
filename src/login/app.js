@@ -33,7 +33,10 @@ async function sendMetric({ name, value = 1, unit = "Count", namespace = "Custom
   }
 
   export default async function login(event, context, cognitoClient = null) {
-    const cognito = cognitoClient || client;
+    const cognito =
+        cognitoClient && typeof cognitoClient.send === "function"
+            ? cognitoClient
+            : client;
 
     const body = JSON.parse(event.body || "{}");
     const { email, password } = body;
