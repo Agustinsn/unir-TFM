@@ -52,7 +52,7 @@ Resources:
   RegisterUserRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub RegisterUserRole-${Stage}
+      # RoleName: !Sub RegisterUserRole-${Stage}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -80,7 +80,7 @@ Resources:
   LoginUserRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub LoginUserRole-${Stage}
+      # RoleName: !Sub LoginUserRole-${Stage}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
