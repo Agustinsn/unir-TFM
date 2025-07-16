@@ -32,7 +32,7 @@ async function sendMetric({ name, value = 1, unit = "Count", namespace = "Custom
     }
   }
 
-export async function login(event, context, cognitoClient = null) {
+  export default async function login(event, context, cognitoClient = null) {
     const cognito = cognitoClient || client;
 
     const body = JSON.parse(event.body || "{}");
