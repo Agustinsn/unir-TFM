@@ -10,12 +10,7 @@ export default async function register(event, context, cognitoClient = null) {
         cognitoClient && typeof cognitoClient.send === "function"
             ? cognitoClient
             : client;
-
-    console.log("Lambda invoked");
-    console.log("typeof cognito:", typeof cognito);
-    console.log("typeof cognito.send:", typeof cognito?.send);
-    console.log("client instance class name:", client.constructor.name);
-    
+  
     const body = JSON.parse(event.body || "{}");
     const { email, password } = body;
     if (!email || !password) {
