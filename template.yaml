@@ -47,6 +47,67 @@ Resources:
         - ALLOW_ADMIN_USER_PASSWORD_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
 
+  ## ========== IAM Lambda Role ==========
+
+  RegisterUserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub RegisterUserRole-${Stage}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RegisterUserPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:SignUp
+                  - cognito-idp:AdminConfirmSignUp
+                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+
+  LoginUserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub LoginUserRole-${Stage}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LoginUserPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:InitiateAuth
+                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: arn:aws:cloudwatch:*:*:*
+
   ## ========== Lambdas ==========
 
   RegisterUserFunction:
@@ -59,19 +120,7 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref UserPool
           CLIENT_ID: !Ref UserPoolClient
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:SignUp
-                - cognito-idp:AdminConfirmSignUp
-              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
-            - Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource: arn:aws:logs:*:*:*
+      Role: !GetAtt RegisterUserRole.Arn
       Events:
         ApiRegister:
           Type: Api
@@ -88,18 +137,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_ID: !Ref UserPoolClient
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:InitiateAuth
-              Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
-            - Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource: arn:aws:logs:*:*:*
+      Role: !GetAtt LoginUserRole.Arn
       Events:
         ApiLogin:
           Type: Api

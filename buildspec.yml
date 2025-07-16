@@ -1,37 +1,3 @@
-# version: 0.2
-
-# env:
-#   variables:
-#     AWS_DEFAULT_REGION: us-east-1
-
-# phases:
-#   install:
-#     runtime-versions:
-#       python: 3.11
-#     commands:
-#       - docker info
-#       - pip install --upgrade pip
-#       - pip install -r requirements.txt
-#       - pip install pytest moto[cognitoidp]==4.2.11 boto3 requests aws-sam-cli
-#       - python -c "from moto import mock_cognitoidp; print('mock_cognitoidp OK')"
-
-#   build:
-#     commands:
-#       - sam --version
-#       - sam build
-
-#   post_build:
-#     commands:
-#       - export PYTHONPATH=$PWD/src:$PYTHONPATH
-#       - pytest tests/unit
-#       # - sam local start-api --port 3000 --env-vars env.json &
-#       # - echo "Esperando a que la API esté arriba..."
-#       # - sleep 5
-#       # - pytest tests/integration
-
-# artifacts:
-#   files:
-#     - '**/*'
 version: 0.2
 
 env:
