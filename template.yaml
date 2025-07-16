@@ -114,7 +114,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/register/
-      Handler: app.register
+      Handler: app.default
       Runtime: nodejs18.x
       Environment:
         Variables:
