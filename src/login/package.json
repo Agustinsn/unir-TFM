@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.0.0"
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
+    "@aws-sdk/client-cloudwatch": "^3.500.0"
   },
   "devDependencies": {
     "jest": "^29.7.0"
