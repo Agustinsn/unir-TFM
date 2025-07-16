@@ -6,7 +6,11 @@ import {
 const client = new CognitoIdentityProviderClient({});
 
 export default async function register(event, context, cognitoClient = null) {
-    const cognito = cognitoClient || client;
+    // const cognito = cognitoClient || client;
+    const cognito =
+        cognitoClient && typeof cognitoClient.send === "function"
+            ? cognitoClient
+            : client;
 
     console.log("Lambda invoked");
     console.log("typeof cognito:", typeof cognito);
